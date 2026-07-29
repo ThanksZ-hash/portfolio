@@ -1,0 +1,13 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#bg)"/>
+  <text x="18" y="30" font-family="'Georgia', serif" font-size="20" font-weight="bold" fill="white">한</text>
+  <path d="M30 24 L38 24 M34 20 L34 28" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M40 30 L46 24 L46 34" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="34" y="50" font-family="'Georgia', serif" font-size="18" font-weight="bold" fill="white">EN</text>
+</svg>

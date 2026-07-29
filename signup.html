@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>회원가입</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 48px 16px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+  }
+  .card {
+    width: 100%;
+    max-width: 440px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  }
+  h1 { font-size: 20px; margin: 0 0 24px; color: #1f2937; }
+  label { display: block; font-size: 13px; color: #6b7280; margin: 14px 0 6px; }
+  input {
+    width: 100%;
+    font-size: 15px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+  }
+  input:focus { outline: none; border-color: #8b5cf6; background: #fff; }
+  .phone-row { display: flex; gap: 8px; }
+  .phone-row input { flex: 1; }
+  .phone-row button {
+    padding: 0 14px;
+    font-size: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #ede9fe;
+    color: #6d28d9;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #signupBtn {
+    display: block;
+    width: 100%;
+    margin-top: 22px;
+    padding: 13px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    cursor: pointer;
+  }
+  #signupBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #message {
+    margin-top: 14px;
+    font-size: 14px;
+    color: #1f2937;
+    white-space: pre-wrap;
+  }
+  .verified { color: #16a34a; font-size: 13px; margin-top: 6px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>회원가입</h1>
+
+    <label for="name">이름</label>
+    <input id="name" type="text" placeholder="이름">
+
+    <label for="region">지역</label>
+    <input id="region" type="text" placeholder="예: 서울">
+
+    <label for="email">이메일</label>
+    <input id="email" type="email" placeholder="you@example.com">
+
+    <label for="phone">휴대폰 번호</label>
+    <div class="phone-row">
+      <input id="phone" type="tel" placeholder="010-0000-0000">
+      <button id="sendCodeBtn" type="button">인증번호 받기</button>
+    </div>
+
+    <label for="code">인증번호</label>
+    <div class="phone-row">
+      <input id="code" type="text" placeholder="인증번호 입력">
+      <button id="verifyBtn" type="button">확인</button>
+    </div>
+    <div class="verified" id="verifiedMsg"></div>
+
+    <label for="password">비밀번호</label>
+    <input id="password" type="password" placeholder="비밀번호">
+
+    <label for="passwordConfirm">비밀번호 확인</label>
+    <input id="passwordConfirm" type="password" placeholder="비밀번호 확인">
+
+    <button id="signupBtn">가입하기</button>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    let phoneVerified = false;
+
+    document.getElementById("sendCodeBtn").addEventListener("click", async () => {
+      const phone = document.getElementById("phone").value.trim();
+      const messageEl = document.getElementById("message");
+      if (!phone) { messageEl.textContent = "휴대폰 번호를 입력해주세요."; return; }
+
+      const res = await fetch("/api/send-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      // 실제 SMS 연동 전까지는 화면에 인증번호를 바로 보여주는 모의 인증입니다.
+      messageEl.textContent = `[모의 인증] 인증번호: ${data.code}`;
+    });
+
+    document.getElementById("verifyBtn").addEventListener("click", async () => {
+      const phone = document.getElementById("phone").value.trim();
+      const code = document.getElementById("code").value.trim();
+      const verifiedMsg = document.getElementById("verifiedMsg");
+      const messageEl = document.getElementById("message");
+
+      const res = await fetch("/api/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, code }),
+      });
+      const data = await res.json();
+
+      if (data.verified) {
+        phoneVerified = true;
+        verifiedMsg.textContent = "휴대폰 인증이 완료되었습니다.";
+      } else {
+        verifiedMsg.textContent = "";
+        messageEl.textContent = "인증번호가 올바르지 않습니다.";
+      }
+    });
+
+    document.getElementById("signupBtn").addEventListener("click", async () => {
+      const messageEl = document.getElementById("message");
+      const name = document.getElementById("name").value.trim();
+      const region = document.getElementById("region").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const password = document.getElementById("password").value;
+      const passwordConfirm = document.getElementById("passwordConfirm").value;
+
+      if (!name || !region || !email || !phone || !password) {
+        messageEl.textContent = "모든 항목을 입력해주세요.";
+        return;
+      }
+      if (!phoneVerified) {
+        messageEl.textContent = "휴대폰 인증을 먼저 완료해주세요.";
+        return;
+      }
+      if (password !== passwordConfirm) {
+        messageEl.textContent = "비밀번호가 일치하지 않습니다.";
+        return;
+      }
+
+      const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, region, email, phone, password }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        messageEl.textContent = "회원가입이 완료되었습니다. 로그인 페이지로 이동합니다...";
+        setTimeout(() => { window.location.href = "/login"; }, 1000);
+      } else {
+        messageEl.textContent = data.error ?? "회원가입에 실패했습니다.";
+      }
+    });
+  </script>
+</body>
+</html>

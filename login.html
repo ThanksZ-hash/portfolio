@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>로그인</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 48px 16px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+  }
+  .card {
+    width: 100%;
+    max-width: 380px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  }
+  h1 { font-size: 20px; margin: 0 0 24px; color: #1f2937; }
+  label { display: block; font-size: 13px; color: #6b7280; margin: 14px 0 6px; }
+  input {
+    width: 100%;
+    font-size: 15px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+  }
+  input:focus { outline: none; border-color: #8b5cf6; background: #fff; }
+  #loginBtn {
+    display: block;
+    width: 100%;
+    margin-top: 22px;
+    padding: 13px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    cursor: pointer;
+  }
+  #message { margin-top: 14px; font-size: 14px; color: #dc2626; }
+  .signup-link { margin-top: 16px; font-size: 13px; text-align: center; }
+  .signup-link a { color: #6d28d9; text-decoration: none; }
+
+  .extra-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .extra-row button, .extra-row a {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    font-size: 13px;
+    border-radius: 10px;
+    border: none;
+    background: #f3f4f6;
+    color: #374151;
+    cursor: pointer;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+  .extra-row button:hover, .extra-row a:hover { background: #e5e7eb; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>로그인</h1>
+
+    <label for="email">이메일</label>
+    <input id="email" type="email" placeholder="you@example.com">
+
+    <label for="password">비밀번호</label>
+    <input id="password" type="password" placeholder="비밀번호">
+
+    <button id="loginBtn">로그인</button>
+
+    <div class="extra-row">
+      <button id="adminLoginBtn" type="button">관리자로 로그인</button>
+      <a href="/find-account">아이디/비밀번호 찾기</a>
+    </div>
+
+    <div id="message"></div>
+    <div class="signup-link">계정이 없으신가요? <a href="/signup">회원가입</a></div>
+  </div>
+
+  <script>
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const messageEl = document.getElementById("message");
+
+      if (!email || !password) {
+        messageEl.textContent = "이메일과 비밀번호를 입력해주세요.";
+        return;
+      }
+
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        window.location.href = "/";
+      } else {
+        messageEl.textContent = data.error ?? "로그인에 실패했습니다.";
+      }
+    });
+
+    document.getElementById("adminLoginBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/admin-login", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = "/";
+      } else {
+        document.getElementById("message").textContent = "관리자 로그인에 실패했습니다.";
+      }
+    });
+  </script>
+</body>
+</html>
